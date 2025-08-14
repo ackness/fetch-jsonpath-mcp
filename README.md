@@ -1,5 +1,8 @@
 # Fetch JSONPath MCP
 
+[![PyPI Downloads](https://img.shields.io/pypi/dm/fetch-jsonpath-mcp)](https://pypi.org/project/fetch-jsonpath-mcp/)
+[![简体中文](https://img.shields.io/badge/docs-简体中文-yellow)](./docs/README.zh-CN.md)
+
 A Model Context Protocol (MCP) server that provides tools for fetching and extracting JSON data from URLs using JSONPath patterns.
 
 ## 🎯 Why Use This?
@@ -147,6 +150,21 @@ uv run demo-server
 uv run fetch-jsonpath-mcp
 ```
 
+## Demo Server Data
+
+The demo server at `http://localhost:8080` returns:
+
+```json
+{
+  "foo": [{"baz": 1, "qux": "a"}, {"baz": 2, "qux": "b"}],
+  "bar": {
+    "items": [10, 20, 30], 
+    "config": {"enabled": true, "name": "example"}
+  },
+  "metadata": {"version": "1.0.0"}
+}
+```
+
 ## Available Tools
 
 ### `get-json`
@@ -174,6 +192,7 @@ Get raw text content from any URL.
   }
 }
 ```
+Returns: `{"foo": [{"baz": 1, "qux": "a"}, {"baz": 2, "qux": "b"}], "bar": {"items": [10, 20, 30], "config": {"enabled": true, "name": "example"}}, "metadata": {"version": "1.0.0"}}`
 
 ### `batch-get-json`
 Process multiple URLs with different JSONPath patterns.
@@ -189,6 +208,7 @@ Process multiple URLs with different JSONPath patterns.
   }
 }
 ```
+Returns: `[[1, 2], [10, 20, 30]]`
 
 ### `batch-get-text`
 Get text content from multiple URLs.
@@ -201,21 +221,7 @@ Get text content from multiple URLs.
   }
 }
 ```
-
-## Demo Server Data
-
-The demo server at `http://localhost:8080` returns:
-
-```json
-{
-  "foo": [{"baz": 1, "qux": "a"}, {"baz": 2, "qux": "b"}],
-  "bar": {
-    "items": [10, 20, 30], 
-    "config": {"enabled": true, "name": "example"}
-  },
-  "metadata": {"version": "1.0.0"}
-}
-```
+Returns: `["JSON content...", "JSON content..."]`
 
 ## JSONPath Examples
 
