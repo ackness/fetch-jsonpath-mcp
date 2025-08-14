@@ -142,11 +142,11 @@ The demo server at `http://localhost:8080` returns:
 
 This project uses [jsonpath-ng](https://github.com/h2non/jsonpath-ng) for JSONPath implementation.
 
-| Pattern | Result | Description | Token Savings |
-|---------|--------|-------------|---------------|
-| `foo[*].baz` | `[1, 2]` | Get all baz values | 95% fewer tokens |
-| `bar.items[*]` | `[10, 20, 30]` | Get all items | 90% fewer tokens |
-| `metadata.version` | `["1.0.0"]` | Get version | 98% fewer tokens |
+| Pattern | Result | Description | 
+|---------|--------|-------------|
+| `foo[*].baz` | `[1, 2]` | Get all baz values | 
+| `bar.items[*]` | `[10, 20, 30]` | Get all items | 
+| `metadata.version` | `["1.0.0"]` | Get version | 
 
 For complete JSONPath syntax reference, see the [jsonpath-ng documentation](https://github.com/h2non/jsonpath-ng#jsonpath-syntax).
 
