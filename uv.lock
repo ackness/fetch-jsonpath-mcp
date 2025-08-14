@@ -78,17 +78,20 @@ wheels = [
 ]
 
 [[package]]
-name = "fastapi"
-version = "0.116.1"
-source = { registry = "https://pypi.org/simple" }
+name = "fetch-jsonpath-mcp"
+version = "0.1.0"
+source = { editable = "." }
 dependencies = [
-    { name = "pydantic" },
-    { name = "starlette" },
-    { name = "typing-extensions" },
+    { name = "httpx" },
+    { name = "jsonpath-ng" },
+    { name = "mcp", extra = ["cli"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/d7/6c8b3bfe33eeffa208183ec037fee0cce9f7f024089ab1c5d12ef04bd27c/fastapi-0.116.1.tar.gz", hash = "sha256:ed52cbf946abfd70c5a0dccb24673f0670deeb517a88b3544d03c2a6bf283143", size = 296485, upload-time = "2025-07-11T16:22:32.057Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/47/d63c60f59a59467fda0f93f46335c9d18526d7071f025cb5b89d5353ea42/fastapi-0.116.1-py3-none-any.whl", hash = "sha256:c46ac7c312df840f0c9e220f7964bada936781bc4e2e6eb71f1c4d7553786565", size = 95631, upload-time = "2025-07-11T16:22:30.485Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "jsonpath-ng", specifier = ">=1.7.0" },
+    { name = "mcp", extras = ["cli"], specifier = ">=1.12.4" },
 ]
 
 [[package]]
@@ -156,27 +159,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/6d/86/08646239a313f895186ff0a4573452038eed8c86f54380b3ebac34d32fb2/jsonpath-ng-1.7.0.tar.gz", hash = "sha256:f6f5f7fd4e5ff79c785f1573b394043b39849fb2bb47bcead935d12b00beab3c", size = 37838, upload-time = "2024-10-11T15:41:42.404Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/35/5a/73ecb3d82f8615f32ccdadeb9356726d6cae3a4bbc840b437ceb95708063/jsonpath_ng-1.7.0-py3-none-any.whl", hash = "sha256:f3d7f9e848cba1b6da28c55b1c26ff915dc9e0b1ba7e752a53d6da8d5cbd00b6", size = 30105, upload-time = "2024-11-20T17:58:30.418Z" },
-]
-
-[[package]]
-name = "jsonrpc-mcp"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "fastapi" },
-    { name = "httpx" },
-    { name = "jsonpath-ng" },
-    { name = "mcp", extra = ["cli"] },
-    { name = "uvicorn" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "jsonpath-ng", specifier = ">=1.7.0" },
-    { name = "mcp", extras = ["cli"], specifier = ">=1.12.4" },
-    { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
 [[package]]

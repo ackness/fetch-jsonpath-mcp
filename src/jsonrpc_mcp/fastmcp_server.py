@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from jsonrpc_mcp.utils import batch_extract_json, batch_fetch_urls, extract_json, fetch_url_content
 
 # Create FastMCP server instance
-mcp = FastMCP("jsonrpc-mcp")
+mcp = FastMCP("fetch-jsonpath-mcp")
 
 
 # Pydantic models for structured input/output

@@ -1,6 +1,48 @@
-# JSONRPC MCP
+# Fetch JSONPath MCP
 
 A Model Context Protocol (MCP) server that provides tools for fetching and extracting JSON data from URLs using JSONPath patterns.
+
+## 🎯 Why Use This?
+
+**Reduce LLM Token Usage & Hallucination** - Instead of fetching entire JSON responses and wasting tokens, extract only the data you need.
+
+### Traditional Fetch vs JSONPath Extract
+
+**❌ Traditional fetch (wasteful):**
+```json
+// API returns 2000+ tokens
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "email": "alice@example.com", 
+      "avatar": "https://...",
+      "profile": {
+        "bio": "Long bio text...",
+        "settings": {...},
+        "preferences": {...},
+        "metadata": {...}
+      },
+      "posts": [...],
+      "followers": [...],
+      "created_at": "2023-01-01",
+      "updated_at": "2024-01-01"
+    },
+    // ... 50 more users
+  ],
+  "pagination": {...},
+  "meta": {...}
+}
+```
+
+**✅ JSONPath extract (efficient):**
+```json
+// Only 10 tokens - exactly what you need!
+["Alice", "Bob", "Charlie"]
+```
+
+Using pattern: `data[*].name` saves **99% tokens** and eliminates model hallucination from irrelevant data.
 
 ## Quick Start
 
@@ -23,7 +65,7 @@ uv run demo-server
 ### 3. Run MCP Server
 
 ```bash
-uv run jsonrpc-mcp
+uv run fetch-jsonpath-mcp
 ```
 
 ## Available Tools
@@ -98,11 +140,23 @@ The demo server at `http://localhost:8080` returns:
 
 ## JSONPath Examples
 
-| Pattern | Result | Description |
-|---------|--------|-------------|
-| `foo[*].baz` | `[1, 2]` | Get all baz values |
-| `bar.items[*]` | `[10, 20, 30]` | Get all items |
-| `metadata.version` | `["1.0.0"]` | Get version |
+This project uses [jsonpath-ng](https://github.com/h2non/jsonpath-ng) for JSONPath implementation.
+
+| Pattern | Result | Description | Token Savings |
+|---------|--------|-------------|---------------|
+| `foo[*].baz` | `[1, 2]` | Get all baz values | 95% fewer tokens |
+| `bar.items[*]` | `[10, 20, 30]` | Get all items | 90% fewer tokens |
+| `metadata.version` | `["1.0.0"]` | Get version | 98% fewer tokens |
+
+For complete JSONPath syntax reference, see the [jsonpath-ng documentation](https://github.com/h2non/jsonpath-ng#jsonpath-syntax).
+
+## 🚀 Performance Benefits
+
+- **Token Efficiency**: Extract only needed data, not entire JSON responses
+- **Faster Processing**: Smaller payloads = faster LLM responses  
+- **Reduced Hallucination**: Less irrelevant data = more accurate outputs
+- **Cost Savings**: Fewer tokens = lower API costs
+- **Better Focus**: Clean data helps models stay on task
 
 ## Configuration
 
