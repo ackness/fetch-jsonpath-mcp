@@ -7,7 +7,7 @@ from mcp.server.stdio import stdio_server
 
 from jsonrpc_mcp.utils import batch_extract_json, batch_fetch_urls, extract_json, fetch_url_content
 
-server = Server("fetch-jsonpath-mcp", version="0.1.0")
+server = Server("fetch-jsonpath-mcp", version="1.0.0")
 
 
 @server.list_tools()

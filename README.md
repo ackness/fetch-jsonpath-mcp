@@ -44,7 +44,86 @@ A Model Context Protocol (MCP) server that provides tools for fetching and extra
 
 Using pattern: `data[*].name` saves **99% tokens** and eliminates model hallucination from irrelevant data.
 
-## Quick Start
+## Installation
+
+For most IDEs, use the `uvx` tool to run the server.
+
+```json
+{
+  "mcpServers": {
+    "fetch-jsonpath-mcp": {
+      "command": "uvx",
+      "args": [
+        "fetch-jsonpath-mcp"
+      ]
+    }
+  }
+}
+```
+
+<details>
+<summary><b>Install in Claude Code</b></summary>
+
+```bash
+claude mcp add fetch-jsonpath-mcp -- uvx fetch-jsonpath-mcp
+```
+
+</details>
+
+<details>
+<summary><b>Install in Cursor</b></summary>
+
+```json
+{
+  "mcpServers": {
+    "fetch-jsonpath-mcp": {
+      "command": "uvx",
+      "args": ["fetch-jsonpath-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in Windsurf</b></summary>
+
+Add this to your Windsurf MCP config file. See [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+
+#### Windsurf Local Server Connection
+
+```json
+{
+  "mcpServers": {
+    "fetch-jsonpath-mcp": {
+      "command": "uvx",
+      "args": ["fetch-jsonpath-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Install in VS Code</b></summary>
+
+```json
+"mcp": {
+  "servers": {
+    "fetch-jsonpath-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["fetch-jsonpath-mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+## Development Setup
 
 ### 1. Install Dependencies
 

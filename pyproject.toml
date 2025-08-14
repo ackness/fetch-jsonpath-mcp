@@ -1,6 +1,6 @@
 [project]
 name = "fetch-jsonpath-mcp"
-version = "0.1.0"
+version = "1.0.0"
 description = "An MCP server for fetching and extracting JSON data using JSONPath"
 authors = [
     { name = "ackness", email = "ackness8@gmail.com" }
