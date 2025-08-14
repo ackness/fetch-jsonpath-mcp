@@ -1,0 +1,44 @@
+[project]
+name = "jsonrpc-mcp"
+version = "0.1.0"
+description = "A JSONRPC server for MCP"
+authors = [
+    { name = "ackness", email = "ackness8@gmail.com" }
+]
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.12.4",
+    "jsonpath-ng>=1.7.0",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+]
+readme = "README.md"
+requires-python = ">= 3.10"
+
+[project.scripts]
+jsonrpc-mcp = "jsonrpc_mcp.server:run"
+demo-server = "demo.demo_server:start_server"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jsonrpc_mcp", "demo"]
+
+[tool.ruff]
+lint.select = ["E", "F", "I", "N", "UP"]  # Added UP for pyupgrade rules
+line-length = 256
+target-version = "py310"
