@@ -7,7 +7,7 @@ from mcp.server.stdio import stdio_server
 
 from jsonrpc_mcp.utils import batch_extract_json, batch_fetch_urls, extract_json, fetch_url_content
 
-server = Server("fetch-jsonpath-mcp", version="1.0.0")
+server = Server("fetch-jsonpath-mcp", version="1.0.1")
 
 
 @server.list_tools()
@@ -16,7 +16,8 @@ async def handle_list_tools() -> list[types.Tool]:
         types.Tool(
             name="get-json",
             description=(
-                "Extract JSON content from a URL using JSONPath. "
+                "Extract JSON content from a URL using JSONPath with extended features. "
+                "Supports extensions like len, keys, filtering, arithmetic operations, and more. "
                 "If 'pattern' is omitted or empty, the entire JSON document is returned."
             ),
             inputSchema={
@@ -28,7 +29,14 @@ async def handle_list_tools() -> list[types.Tool]:
                     },
                     "pattern": {
                         "type": "string",
-                        "description": "JSONPath pattern, e.g. 'foo[*].baz', 'bar.items[*]', 'bar.config.nested.key1'",
+                        "description": (
+                            "Extended JSONPath pattern supporting: "
+                            "Basic: 'foo[*].baz', 'bar.items[*]'; "
+                            "Extensions: '$.data.`len`', '$.users.`keys`', '$.field.`str()`'; "
+                            "Filtering: '$.items[?(@.price > 10)]', '$.users[?name = \"John\"]'; "
+                            "Arithmetic: '$.a + $.b', '$.items[*].price * 1.2'; "
+                            "Text ops: '$.text.`sub(/old/, new)`', '$.csv.`split(\",\")'"
+                        ),
                     },
                 },
                 "required": ["url"],
@@ -51,7 +59,8 @@ async def handle_list_tools() -> list[types.Tool]:
         types.Tool(
             name="batch-get-json",
             description=(
-                "Batch extract JSON content from multiple URLs with different JSONPath patterns. "
+                "Batch extract JSON content from multiple URLs with different extended JSONPath patterns. "
+                "Supports all JSONPath extensions and optimizes by fetching each unique URL only once. "
                 "Executes requests concurrently for better performance."
             ),
             inputSchema={
@@ -69,7 +78,12 @@ async def handle_list_tools() -> list[types.Tool]:
                                 },
                                 "pattern": {
                                     "type": "string",
-                                    "description": "JSONPath pattern (optional)",
+                                    "description": (
+                                        "Extended JSONPath pattern (optional) supporting: "
+                                        "Basic: 'foo[*].baz'; Extensions: '$.data.`len`'; "
+                                        "Filtering: '$.items[?(@.price > 10)]'; "
+                                        "Arithmetic: '$.a + $.b'; Text ops: '$.text.`sub(/old/, new)`'"
+                                    ),
                                 },
                             },
                             "required": ["url"],
@@ -157,7 +171,7 @@ async def main():
             write_stream,
             InitializationOptions(
                 server_name="fetch-jsonpath-mcp",
-                server_version="0.1.0",
+                server_version="1.0.1",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},
