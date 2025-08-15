@@ -1,6 +1,6 @@
 [project]
 name = "fetch-jsonpath-mcp"
-version = "1.0.1"
+version = "1.0.2"
 description = "An MCP server for fetching and extracting JSON data using JSONPath"
 authors = [
     { name = "ackness", email = "ackness8@gmail.com" }
@@ -9,6 +9,8 @@ dependencies = [
     "httpx>=0.28.1",
     "mcp[cli]>=1.12.4",
     "jsonpath-ng>=1.7.0",
+    "fastapi>=0.116.1",
+    "uvicorn>=0.35.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"

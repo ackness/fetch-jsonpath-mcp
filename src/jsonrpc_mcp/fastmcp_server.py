@@ -1,11 +1,26 @@
 """FastMCP server implementation for JSONRPC MCP Server."""
 
+import json
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel
 
 from jsonrpc_mcp.utils import batch_extract_json, batch_fetch_urls, extract_json, fetch_url_content
+
+
+def ensure_json_serializable(obj: Any) -> Any:
+    """Ensure object is JSON serializable, converting if necessary."""
+    try:
+        json.dumps(obj)
+        return obj
+    except (TypeError, ValueError):
+        if isinstance(obj, (list, tuple)):
+            return [ensure_json_serializable(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {str(k): ensure_json_serializable(v) for k, v in obj.items()}
+        else:
+            return str(obj)
 
 # Create FastMCP server instance
 mcp = FastMCP("fetch-jsonpath-mcp")
@@ -40,7 +55,9 @@ async def get_json(url: str, pattern: str = "") -> list:
     """
     try:
         content = await fetch_url_content(url, as_json=True)
-        return extract_json(content, pattern)
+        result = extract_json(content, pattern)
+        # Ensure the result is JSON serializable
+        return ensure_json_serializable(result)
     except Exception as e:
         # If JSON parsing fails, provide helpful error message
         error_msg = str(e)
@@ -65,7 +82,7 @@ async def get_text(url: str) -> str:
 
 
 @mcp.tool()
-async def batch_get_json(requests: list[BatchRequest]) -> list[BatchResult]:
+async def batch_get_json(requests: list[BatchRequest]) -> list[dict]:
     """
     Batch extract JSON content from multiple URLs with different JSONPath patterns.
     Executes requests concurrently for better performance.
@@ -80,17 +97,8 @@ async def batch_get_json(requests: list[BatchRequest]) -> list[BatchResult]:
     request_dicts = [{"url": req.url, "pattern": req.pattern} for req in requests]
     results = await batch_extract_json(request_dicts)
     
-    # Convert results to Pydantic models
-    return [
-        BatchResult(
-            url=result["url"],
-            pattern=result.get("pattern", ""),
-            success=result["success"],
-            content=result.get("content"),
-            error=result.get("error")
-        )
-        for result in results
-    ]
+    # Ensure all results are JSON serializable
+    return ensure_json_serializable(results)
 
 
 @mcp.tool()
@@ -105,7 +113,10 @@ async def batch_get_text(urls: list[str]) -> list[dict[str, Any]]:
     Returns:
         List of results with success/failure information
     """
-    return await batch_fetch_urls(urls, as_json=False)
+    results = await batch_fetch_urls(urls, as_json=False)
+    
+    # Ensure all results are JSON serializable
+    return ensure_json_serializable(results)
 
 
 def run():
