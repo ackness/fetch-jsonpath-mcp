@@ -126,7 +126,7 @@ def get_default_browser_headers() -> dict[str, str]:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-        "Accept-Encoding": "gzip, deflate, br",
+        # Removed Accept-Encoding to avoid compression issues
         "DNT": "1",
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1",
@@ -311,7 +311,7 @@ async def fetch_url_content(
             raise ValueError(f"Response size ({content_length} bytes) exceeds maximum allowed ({max_size} bytes)")
         
         if as_json:
-            # For JSON responses, try both text and content decoding
+            # For JSON responses, use response.text directly (no compression expected)
             content_to_parse = response.text
             if not content_to_parse:
                 # If response.text is empty, try decoding content directly
