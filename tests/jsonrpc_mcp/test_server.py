@@ -13,7 +13,7 @@ async def test_handle_get_json_basic():
         mock_fetch.return_value = '{"test": "value"}'
         result = await handle_get_json("http://example.com")
         assert result == [{"test": "value"}]
-        mock_fetch.assert_called_once_with("http://example.com", as_json=True)
+        mock_fetch.assert_called_once_with("http://example.com", as_json=True, method="GET", data=None, headers=None)
 
 
 @pytest.mark.asyncio
@@ -23,7 +23,7 @@ async def test_handle_get_json_with_pattern():
         mock_fetch.return_value = '{"data": {"items": [1, 2, 3]}}'
         result = await handle_get_json("http://example.com", "data.items[*]")
         assert result == [1, 2, 3]
-        mock_fetch.assert_called_once_with("http://example.com", as_json=True)
+        mock_fetch.assert_called_once_with("http://example.com", as_json=True, method="GET", data=None, headers=None)
 
 
 @pytest.mark.asyncio
@@ -87,7 +87,7 @@ async def test_batch_extract_json():
 @pytest.mark.asyncio
 async def test_handle_call_tool_missing_url():
     """Test tool call with missing URL"""
-    result = await handle_call_tool("get-json", {})
+    result = await handle_call_tool("fetch-json", {})
     assert len(result) == 1
     assert "Missing required property: url" in result[0].text
 
@@ -101,22 +101,22 @@ async def test_handle_call_tool_unknown_tool():
 
 
 @pytest.mark.asyncio
-async def test_handle_call_tool_get_text():
-    """Test get-text tool"""
+async def test_handle_call_tool_fetch_text():
+    """Test fetch-text tool"""
     with patch('jsonrpc_mcp.server.fetch_url_content') as mock_fetch:
         mock_fetch.return_value = "Plain text content"
-        result = await handle_call_tool("get-text", {"url": "http://example.com"})
+        result = await handle_call_tool("fetch-text", {"url": "http://example.com"})
         assert len(result) == 1
         assert result[0].text == "Plain text content"
-        mock_fetch.assert_called_once_with("http://example.com", as_json=False)
+        mock_fetch.assert_called_once_with("http://example.com", as_json=False, method="GET", data=None, headers=None, output_format="markdown")
 
 
 @pytest.mark.asyncio
-async def test_handle_call_tool_batch_get_json():
-    """Test batch-get-json tool"""
+async def test_handle_call_tool_batch_fetch_json():
+    """Test batch-fetch-json tool"""
     with patch('jsonrpc_mcp.utils.batch_extract_json') as mock_batch:
         mock_batch.return_value = [{"url": "http://example.com", "success": True, "content": [1, 2, 3]}]
-        result = await handle_call_tool("batch-get-json", {
+        result = await handle_call_tool("batch-fetch-json", {
             "requests": [{"url": "http://example.com", "pattern": "data[*]"}]
         })
         assert len(result) == 1
@@ -124,12 +124,12 @@ async def test_handle_call_tool_batch_get_json():
 
 
 @pytest.mark.asyncio
-async def test_handle_call_tool_batch_get_text():
-    """Test batch-get-text tool"""
+async def test_handle_call_tool_batch_fetch_text():
+    """Test batch-fetch-text tool"""
     with patch('jsonrpc_mcp.utils.batch_fetch_urls') as mock_batch:
         mock_batch.return_value = [{"url": "http://example.com", "success": True, "content": "text"}]
-        result = await handle_call_tool("batch-get-text", {
-            "urls": ["http://example.com"]
+        result = await handle_call_tool("batch-fetch-text", {
+            "requests": ["http://example.com"]
         })
         assert len(result) == 1
         assert "success" in result[0].text
@@ -138,8 +138,8 @@ async def test_handle_call_tool_batch_get_text():
 @pytest.mark.asyncio
 async def test_handle_call_tool_batch_missing_params():
     """Test batch tools with missing parameters"""
-    result = await handle_call_tool("batch-get-json", {})
+    result = await handle_call_tool("batch-fetch-json", {})
     assert "Missing or empty 'requests' array" in result[0].text
     
-    result = await handle_call_tool("batch-get-text", {})
-    assert "Missing or empty 'urls' array" in result[0].text
+    result = await handle_call_tool("batch-fetch-text", {})
+    assert "Missing or empty 'requests' array" in result[0].text

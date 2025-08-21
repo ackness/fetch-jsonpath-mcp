@@ -21,7 +21,11 @@ async def test_get_http_client_config():
         assert config['timeout'] == 30.0
         assert not config['verify']
         assert config['follow_redirects']
-        assert config['headers'] == {"Authorization": "Bearer token"}
+        # Check that custom headers are present and default headers exist
+        assert "Authorization" in config['headers']
+        assert config['headers']["Authorization"] == "Bearer token"
+        assert "User-Agent" in config['headers']  # Default browser header
+        assert "Accept" in config['headers']      # Default browser header
         assert config['trust_env']
 
 
@@ -56,7 +60,7 @@ async def test_fetch_url_content_invalid_json():
 async def test_batch_fetch_urls_mixed_results():
     """Test batch fetching with some failures"""
     
-    async def mock_fetch(url, as_json=True):
+    async def mock_fetch(url, as_json=True, output_format="markdown"):
         if "fail" in url:
             raise Exception("Network error")
         return f"content from {url}"
@@ -76,7 +80,7 @@ async def test_batch_fetch_urls_mixed_results():
 async def test_batch_extract_json_mixed_results():
     """Test batch JSON extraction with some failures"""
     
-    async def mock_fetch(url, as_json=True):
+    async def mock_fetch(url, as_json=True, method="GET", data=None, headers=None, output_format="markdown"):
         if "fail" in url:
             raise Exception("Network error")
         if "invalid" in url:

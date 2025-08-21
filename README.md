@@ -1,9 +1,9 @@
 # Fetch JSONPath MCP
 
 [![PyPI Downloads](https://img.shields.io/pypi/dm/fetch-jsonpath-mcp)](https://pypi.org/project/fetch-jsonpath-mcp/)
-[![简体中文](https://img.shields.io/badge/docs-简体中文-yellow)](./docs/README.zh-CN.md)
+[![简体中文](https://img.shields.io/badge/docs-简体中文-red)](./docs/README.zh-CN.md)
 
-A Model Context Protocol (MCP) server that provides tools for fetching and extracting JSON data from URLs using JSONPath patterns.
+A Model Context Protocol (MCP) server that provides tools for fetching JSON data and web content from URLs. Features intelligent content extraction, multiple HTTP methods, and browser-like headers for reliable web scraping.
 
 ## 🎯 Why Use This?
 
@@ -167,39 +167,60 @@ The demo server at `http://localhost:8080` returns:
 
 ## Available Tools
 
-### `get-json`
-Extract JSON data using JSONPath patterns.
+### `fetch-json`
+Extract JSON data using JSONPath patterns with support for all HTTP methods.
 
 ```json
 {
-  "name": "get-json",
+  "name": "fetch-json",
   "arguments": {
     "url": "http://localhost:8080",
-    "pattern": "foo[*].baz"
+    "pattern": "foo[*].baz",
+    "method": "GET"
   }
 }
 ```
 Returns: `[1, 2]`
 
-### `get-text`
-Get raw text content from any URL.
+**Parameters:**
+- `url` (required): Target URL
+- `pattern` (optional): JSONPath pattern for data extraction
+- `method` (optional): HTTP method (GET, POST, PUT, DELETE, etc.) - Default: "GET"
+- `data` (optional): Request body for POST/PUT requests
+- `headers` (optional): Additional HTTP headers
+
+### `fetch-text`
+Fetch web content with intelligent text extraction. **Defaults to Markdown format** for better readability.
 
 ```json
 {
-  "name": "get-text",
+  "name": "fetch-text",
   "arguments": {
-    "url": "http://localhost:8080"
+    "url": "http://localhost:8080",
+    "output_format": "clean_text"
   }
 }
 ```
-Returns: `{"foo": [{"baz": 1, "qux": "a"}, {"baz": 2, "qux": "b"}], "bar": {"items": [10, 20, 30], "config": {"enabled": true, "name": "example"}}, "metadata": {"version": "1.0.0"}}`
+Returns: Clean text representation of the JSON data
 
-### `batch-get-json`
-Process multiple URLs with different JSONPath patterns.
+**Output Formats:**
+- `"markdown"` (default): Converts HTML to clean Markdown format
+- `"clean_text"`: Pure text with HTML tags removed  
+- `"raw_html"`: Original HTML content
+
+**Parameters:**
+- `url` (required): Target URL
+- `method` (optional): HTTP method - Default: "GET"
+- `data` (optional): Request body for POST/PUT requests
+- `headers` (optional): Additional HTTP headers
+- `output_format` (optional): Output format - Default: "markdown"
+
+### `batch-fetch-json`
+Process multiple URLs with different JSONPath patterns concurrently.
 
 ```json
 {
-  "name": "batch-get-json",
+  "name": "batch-fetch-json",
   "arguments": {
     "requests": [
       {"url": "http://localhost:8080", "pattern": "foo[*].baz"},
@@ -208,20 +229,36 @@ Process multiple URLs with different JSONPath patterns.
   }
 }
 ```
-Returns: `[[1, 2], [10, 20, 30]]`
+Returns: `[{"url": "http://localhost:8080", "pattern": "foo[*].baz", "success": true, "content": [1, 2]}, {"url": "http://localhost:8080", "pattern": "bar.items[*]", "success": true, "content": [10, 20, 30]}]`
 
-### `batch-get-text`
-Get text content from multiple URLs.
+**Request Object Parameters:**
+- `url` (required): Target URL
+- `pattern` (optional): JSONPath pattern
+- `method` (optional): HTTP method - Default: "GET" 
+- `data` (optional): Request body
+- `headers` (optional): Additional HTTP headers
+
+### `batch-fetch-text`
+Fetch content from multiple URLs with intelligent text extraction.
 
 ```json
 {
-  "name": "batch-get-text",
+  "name": "batch-fetch-text",
   "arguments": {
-    "urls": ["http://localhost:8080", "http://localhost:8080"]
+    "requests": [
+      "http://localhost:8080",
+      {"url": "http://localhost:8080", "output_format": "raw_html"}
+    ],
+    "output_format": "markdown"
   }
 }
 ```
-Returns: `["JSON content...", "JSON content..."]`
+Returns: `[{"url": "http://localhost:8080", "success": true, "content": "# Demo Server Data\n\n..."}, {"url": "http://localhost:8080", "success": true, "content": "{\"foo\": [{\"baz\": 1, \"qux\": \"a\"}, {\"baz\": 2, \"qux\": \"b\"}]..."}]`
+
+**Supports:**
+- Simple URL strings
+- Full request objects with custom methods and headers
+- Mixed input types in the same batch
 
 ## JSONPath Examples
 
@@ -242,16 +279,37 @@ For complete JSONPath syntax reference, see the [jsonpath-ng documentation](http
 - **Reduced Hallucination**: Less irrelevant data = more accurate outputs
 - **Cost Savings**: Fewer tokens = lower API costs
 - **Better Focus**: Clean data helps models stay on task
+- **Smart Headers**: Default browser headers prevent blocking and improve access
+- **Markdown Conversion**: Clean, readable format that preserves structure
 
 ## Configuration
 
-Set environment variables:
+Set environment variables to customize behavior:
 
 ```bash
+# Request timeout in seconds (default: 10.0)
 export JSONRPC_MCP_TIMEOUT=30
+
+# SSL verification (default: true)
+export JSONRPC_MCP_VERIFY=false
+
+# Follow redirects (default: true)
+export JSONRPC_MCP_FOLLOW_REDIRECTS=true
+
+# Custom headers (will be merged with default browser headers)
 export JSONRPC_MCP_HEADERS='{"Authorization": "Bearer token"}'
+
+# HTTP proxy configuration
 export JSONRPC_MCP_PROXY="http://proxy.example.com:8080"
 ```
+
+**Default Browser Headers**: The server automatically includes realistic browser headers to prevent blocking:
+- User-Agent: Chrome browser simulation
+- Accept: Standard browser content types
+- Accept-Language, Accept-Encoding: Browser defaults
+- Security headers: Sec-Fetch-* headers for modern browsers
+
+Custom headers in `JSONRPC_MCP_HEADERS` will override defaults when there are conflicts.
 
 ## Development
 
@@ -261,4 +319,16 @@ pytest
 
 # Check code quality
 ruff check --fix
+
+# Build and test locally
+uv build
 ```
+
+## What's New in v1.1.0
+
+- ✨ **Multi-Method HTTP Support**: GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- 🔄 **Tool Renaming**: `get-json` → `fetch-json`, `get-text` → `fetch-text` 
+- 📄 **Markdown Conversion**: Default HTML to Markdown conversion with `markdownify`
+- 🌐 **Smart Browser Headers**: Automatic browser simulation headers
+- 🎛️ **Format Control**: Three output formats for text content (markdown, clean_text, raw_html)
+- 🚀 **Enhanced Batch Processing**: Support for different methods in batch operations
