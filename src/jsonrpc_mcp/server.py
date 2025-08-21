@@ -7,7 +7,7 @@ from mcp.server.stdio import stdio_server
 
 from jsonrpc_mcp.utils import batch_extract_json, batch_fetch_urls, extract_json, fetch_url_content
 
-server = Server("fetch-jsonpath-mcp", version="1.1.0")
+server = Server("fetch-jsonpath-mcp", version="1.1.1")
 
 
 @server.list_tools()
@@ -267,7 +267,7 @@ async def main():
             write_stream,
             InitializationOptions(
                 server_name="fetch-jsonpath-mcp",
-                server_version="1.1.0",
+                server_version="1.1.1",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
                     experimental_capabilities={},

@@ -120,7 +120,7 @@ def get_default_browser_headers() -> dict[str, str]:
     """Get default browser headers to simulate real browser access."""
     return {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept": "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
         "Accept-Encoding": "gzip, deflate, br",
         "DNT": "1",
@@ -253,8 +253,16 @@ async def fetch_url_content(
         
         if as_json and response.text:
             # Validate that it's valid JSON
-            json.loads(response.text)
-            return response.text
+            try:
+                json.loads(response.text)
+                return response.text
+            except json.JSONDecodeError:
+                # If text parsing fails, try content decoding
+                try:
+                    json.loads(response.content.decode('utf-8'))
+                    return response.content.decode('utf-8')
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    raise json.JSONDecodeError("Response is not valid JSON", response.text, 0)
         elif not as_json:
             # For text content, apply format conversion
             return extract_text_content(response.text, output_format)
