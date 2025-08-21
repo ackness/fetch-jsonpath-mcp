@@ -40,6 +40,10 @@ def extract_json(json_str: str, pattern: str) -> list:
     if not pattern or pattern.strip() in {"", "$", "$.", "@"}:
         return [d]
     
+    # Basic security: limit pattern length to prevent abuse
+    if len(pattern) > 1000:
+        raise ValueError("JSONPath pattern too long (max 1000 characters)")
+    
     # Try extended parser first (supports all extensions)
     try:
         jsonpath_expr = ext_parse(pattern)
@@ -140,7 +144,21 @@ async def get_http_client_config() -> dict[str, Any]:
     
     # Timeout (seconds)
     timeout_str = os.getenv("JSONRPC_MCP_TIMEOUT", "").strip()
-    timeout = float(timeout_str) if timeout_str else 10.0
+    try:
+        timeout = float(timeout_str) if timeout_str else 10.0
+        if timeout <= 0 or timeout > 300:  # Max 5 minutes
+            timeout = 10.0
+    except ValueError:
+        timeout = 10.0
+    
+    # Max response size (bytes) - default 10MB
+    max_size_str = os.getenv("JSONRPC_MCP_MAX_SIZE", "").strip()
+    try:
+        max_size = int(max_size_str) if max_size_str else 10 * 1024 * 1024
+        if max_size <= 0 or max_size > 100 * 1024 * 1024:  # Max 100MB
+            max_size = 10 * 1024 * 1024
+    except ValueError:
+        max_size = 10 * 1024 * 1024
 
     # SSL verification
     verify_str = os.getenv("JSONRPC_MCP_VERIFY", "").strip().lower()
@@ -177,7 +195,38 @@ async def get_http_client_config() -> dict[str, Any]:
         "follow_redirects": follow_redirects,
         "headers": headers,
         "trust_env": True,
+        "max_size": max_size,
     }
+
+
+def validate_url(url: str) -> None:
+    """Validate URL for security and format."""
+    import urllib.parse
+    
+    if not url or not isinstance(url, str):
+        raise ValueError("URL must be a non-empty string")
+    
+    # Parse URL
+    parsed = urllib.parse.urlparse(url)
+    
+    # Must have valid scheme
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("URL must use http or https protocol")
+    
+    # Must have hostname
+    if not parsed.netloc:
+        raise ValueError("URL must have a valid hostname")
+    
+    # Prevent local network access (basic protection)
+    hostname = parsed.hostname
+    if hostname:
+        # Block localhost and local IPs
+        if hostname.lower() in ("localhost", "127.0.0.1", "::1"):
+            raise ValueError("Access to localhost is not allowed")
+        
+        # Block private network ranges (basic check)
+        if hostname.startswith(("192.168.", "10.", "172.16.", "172.17.", "172.18.", "172.19.", "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.", "172.31.")):
+            raise ValueError("Access to private networks is not allowed")
 
 
 async def fetch_url_content(
@@ -205,8 +254,13 @@ async def fetch_url_content(
     Raises:
         httpx.RequestError: For network-related errors
         json.JSONDecodeError: If as_json=True and content is not valid JSON
+        ValueError: If URL is invalid or unsafe
     """
+    # Validate URL first
+    validate_url(url)
+    
     config = await get_http_client_config()
+    max_size = config.pop("max_size", 10 * 1024 * 1024)  # Remove from client config
     
     # Merge additional headers with config headers (user headers override defaults)
     if headers:
@@ -251,23 +305,41 @@ async def fetch_url_content(
         
         response.raise_for_status()
         
-        if as_json and response.text:
-            # Validate that it's valid JSON
-            try:
-                json.loads(response.text)
-                return response.text
-            except json.JSONDecodeError:
-                # If text parsing fails, try content decoding
+        # Check response size
+        content_length = len(response.content)
+        if content_length > max_size:
+            raise ValueError(f"Response size ({content_length} bytes) exceeds maximum allowed ({max_size} bytes)")
+        
+        if as_json:
+            # For JSON responses, try both text and content decoding
+            content_to_parse = response.text
+            if not content_to_parse:
+                # If response.text is empty, try decoding content directly
                 try:
-                    json.loads(response.content.decode('utf-8'))
-                    return response.content.decode('utf-8')
-                except (json.JSONDecodeError, UnicodeDecodeError):
-                    raise json.JSONDecodeError("Response is not valid JSON", response.text, 0)
-        elif not as_json:
+                    content_to_parse = response.content.decode('utf-8')
+                except UnicodeDecodeError:
+                    content_to_parse = ""
+            
+            if content_to_parse:
+                try:
+                    json.loads(content_to_parse)
+                    return content_to_parse
+                except json.JSONDecodeError:
+                    # If text parsing fails, try content decoding as fallback
+                    if content_to_parse == response.text:
+                        try:
+                            fallback_content = response.content.decode('utf-8')
+                            json.loads(fallback_content)
+                            return fallback_content
+                        except (json.JSONDecodeError, UnicodeDecodeError):
+                            pass
+                    raise json.JSONDecodeError("Response is not valid JSON", content_to_parse, 0)
+            else:
+                # Empty response
+                return ""
+        else:
             # For text content, apply format conversion
             return extract_text_content(response.text, output_format)
-        else:
-            return response.text
 
 
 async def batch_fetch_urls(requests: list[str | dict[str, Any]], as_json: bool = True, output_format: str = "markdown") -> list[dict[str, Any]]:
