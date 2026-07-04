@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ackness-fetch-jsonpath-mcp-badge.png)](https://mseep.ai/app/ackness-fetch-jsonpath-mcp)
+
 # Fetch JSONPath MCP
 
 [![PyPI Downloads](https://img.shields.io/pypi/dm/fetch-jsonpath-mcp)](https://pypi.org/project/fetch-jsonpath-mcp/)
