@@ -1,42 +1,61 @@
 [project]
 name = "fetch-jsonpath-mcp"
-version = "1.1.2"
+version = "1.2.0"
 description = "An MCP server for fetching and extracting JSON data using JSONPath"
 authors = [
     { name = "ackness", email = "ackness8@gmail.com" }
 ]
-dependencies = [
-    "httpx>=0.28.1",
-    "mcp[cli]>=1.12.4",
-    "jsonpath-ng>=1.7.0",
-    "fastapi>=0.116.1",
-    "uvicorn>=0.35.0",
-    "beautifulsoup4>=4.13.4",
-    "markdownify>=1.2.0",
-]
+license = "MIT"
 readme = "README.md"
 requires-python = ">= 3.10"
+dependencies = [
+    "httpx>=0.28.1",
+    # mcp 2.x is a breaking rework of the SDK; stay on the maintained 1.x line
+    "mcp[cli]>=1.30.0,<2",
+    "jsonpath-ng>=1.8.0",
+    "beautifulsoup4>=4.15.0",
+    "markdownify>=1.2.3",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/ackness/fetch-jsonpath-mcp"
+Repository = "https://github.com/ackness/fetch-jsonpath-mcp"
+Issues = "https://github.com/ackness/fetch-jsonpath-mcp/issues"
 
 [project.scripts]
 fetch-jsonpath-mcp = "jsonrpc_mcp.server:run"
-demo-server = "demo.demo_server:start_server"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.0",
+    # only needed to run the local demo server (demo/demo_server.py)
+    "fastapi>=0.141.0",
+    "uvicorn>=0.54.0",
+]
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-dev-dependencies = [
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.1.0",
-]
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/jsonrpc_mcp", "demo"]
+packages = ["src/jsonrpc_mcp"]
 
 [tool.ruff]
 lint.select = ["E", "F", "I", "N", "UP"]  # Added UP for pyupgrade rules

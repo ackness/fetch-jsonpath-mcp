@@ -137,11 +137,8 @@ uv sync
 ### 2. 启动演示服务器（可选）
 
 ```bash
-# 安装演示服务器依赖
-uv add fastapi uvicorn
-
 # 在端口 8080 启动演示服务器
-uv run demo-server
+uv run demo/demo_server.py
 ```
 
 ### 3. 运行 MCP 服务器
@@ -315,10 +312,10 @@ export JSONRPC_MCP_PROXY="http://proxy.example.com:8080"
 
 ```bash
 # 运行测试
-pytest
+uv run pytest
 
 # 检查代码质量
-ruff check --fix
+uv run ruff check --fix
 
 # 本地构建和测试
 uv build

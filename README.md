@@ -131,17 +131,15 @@ Add this to your Windsurf MCP config file. See [Windsurf MCP docs](https://docs.
 ### 1. Install Dependencies
 
 ```bash
+# Installs the project plus dev tools (pytest, ruff) and demo server deps
 uv sync
 ```
 
 ### 2. Start Demo Server (Optional)
 
 ```bash
-# Install demo server dependencies
-uv add fastapi uvicorn
-
 # Start demo server on port 8080
-uv run demo-server
+uv run demo/demo_server.py
 ```
 
 ### 3. Run MCP Server
@@ -315,14 +313,24 @@ Custom headers in `JSONRPC_MCP_HEADERS` will override defaults when there are co
 
 ```bash
 # Run tests
-pytest
+uv run pytest
 
 # Check code quality
-ruff check --fix
+uv run ruff check --fix
 
 # Build and test locally
 uv build
 ```
+
+## Releasing
+
+Releases are published to PyPI via [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) — no API tokens. Bump `version` in `pyproject.toml`, then push a matching tag:
+
+```bash
+git tag v1.2.0 && git push origin v1.2.0
+```
+
+`.github/workflows/release.yml` verifies the tag matches the project version, runs lint and tests, builds the distributions, publishes to PyPI, and creates a GitHub release with the artifacts attached.
 
 ## What's New in v1.1.0
 
